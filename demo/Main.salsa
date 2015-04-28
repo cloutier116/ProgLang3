@@ -1,0 +1,54 @@
+
+module demo;
+
+import java.io.*;
+
+behavior Main {
+   String starsFile = "testStars.txt";
+   int numStars;
+   BufferedReader br;
+   int numActors = 2;
+
+   void act( String[] argv ) {
+
+      try 
+      {
+         br = new BufferedReader(new FileReader(starsFile));
+      }
+      catch (IOException ioe) 
+      {
+         standardOutput<-println("[error] Can't open the file " + starsFile + " for reading.");
+      }
+
+      try
+      {
+      numStars = Integer.parseInt(br.readLine());
+      }
+      catch (IOException e)
+      {
+         standardOutput<-println("[error] Number of stars must be an int");
+      }
+      
+      makeStars();
+   }
+
+   void makeStars()
+   {
+      Star[] stars = new Star[numStars];
+      for(int i = 0; i < numActors; i++)
+      {
+         stars[i] = new Star();
+      }
+
+      for(int i = 0; i < numActors; i++)
+      {
+         stars[i]<-calc(i, starsFile, numStars);
+      }
+   }
+
+   void starDone()
+   {
+      standardOutput<-println("Star finished");
+   }
+
+}

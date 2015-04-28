@@ -1,0 +1,55 @@
+module demo;
+
+import java.io.*;
+
+behavior Star 
+{
+	double[][] pos;
+
+
+	void act(String[] args)
+	{
+	}
+
+	void calc(int i, String file, int numStars)
+	{
+		standardOutput<-print( i + "\n");
+
+		try 
+		{
+			pos = new double[numStars][3];
+
+			BufferedReader dataIn = new BufferedReader(new FileReader(file));
+			dataIn.readLine();
+			for(int j = 0; j < numStars; j++)
+			{
+				String star = dataIn.readLine();
+				String[] positions = star.split(" ");
+				pos[j][0] = Double.parseDouble(positions[0]);
+				pos[j][1] = Double.parseDouble(positions[1]);
+				pos[j][2] = Double.parseDouble(positions[2]);
+			}
+			//dataIn.close();
+		}
+		catch (IOException ioe)
+		{
+			standardOutput<-println("Error, can't open file " + file);
+		}
+		//main<-starDone();
+	}
+}
+
+/*main()
+	Remove Duplicates
+	Create actors and give star behavior
+ImDone()
+	get stats, update current best
+	give a new job
+
+
+
+Star
+	read files
+	generate double[][]
+	loop through stars and do calculations
+	*/
