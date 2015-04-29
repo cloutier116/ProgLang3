@@ -32,6 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 import java.io.*;
+import java.util.*;
 
 public class Main extends UniversalActor  {
 	public static void main(String args[]) {
@@ -266,9 +267,10 @@ public class Main extends UniversalActor  {
 		}
 
 		String starsFile = "testStars.txt";
-		int numStars;
+		String noDupsStarsFile = "testStarsNoDup.txt";
+		int numStars = 3;
 		BufferedReader br;
-		int numActors = 2;
+		int numActors = 0;
 		double minDist = Double.MAX_VALUE;
 		double maxDist = 0.0;
 		double minMax = Double.MAX_VALUE;
@@ -276,28 +278,23 @@ public class Main extends UniversalActor  {
 		double avg = 0.0;
 		int currentStar = 0;
 		public void act(String[] argv) {
-			try {
-				br = new BufferedReader(new FileReader(starsFile));
-			}
-			catch (IOException ioe) {
+			numStars = (int)removeDuplicates();
+			{
+				// standardOutput<-println("num of stars with no Dups: "+numStars)
 				{
-					// standardOutput<-println("[error] Can't open the file "+starsFile+" for reading.")
-					{
-						Object _arguments[] = { "[error] Can't open the file "+starsFile+" for reading." };
-						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
-						__messages.add( message );
-					}
+					Object _arguments[] = { "num of stars with no Dups: "+numStars };
+					Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+					__messages.add( message );
 				}
 			}
-
 			try {
-				numStars = Integer.parseInt(br.readLine());
+				br = new BufferedReader(new FileReader(noDupsStarsFile));
 			}
-			catch (IOException e) {
+			catch (IOException ioError) {
 				{
-					// standardOutput<-println("[error] Number of stars must be an int")
+					// standardOutput<-println("Error! couldn't open"+noDupsStarsFile)
 					{
-						Object _arguments[] = { "[error] Number of stars must be an int" };
+						Object _arguments[] = { "Error! couldn't open"+noDupsStarsFile };
 						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -320,9 +317,9 @@ public class Main extends UniversalActor  {
 			}
 			for (int i = 0; i<numActors; i++){
 				{
-					// stars[i]<-init(i, starsFile, numStars, ((Main)self))
+					// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self))
 					{
-						Object _arguments[] = { i, starsFile, numStars, ((Main)self) };
+						Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self) };
 						Message message = new Message( self, stars[i], "init", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -347,5 +344,51 @@ public class Main extends UniversalActor  {
 				avg = _avg;
 			}
 }		}
+		public int removeDuplicates() {
+			HashSet starsSet = new HashSet();
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(starsFile));
+				String line = reader.readLine();
+				line = reader.readLine();
+				while (line!=null) {
+					if (!line.equalsIgnoreCase("")) {{
+						starsSet.add(line);
+					}
+}					line = reader.readLine();
+				}
+				reader.close();
+			}
+			catch (IOException ioError) {
+				{
+					// standardOutput<-println("Error! couldn't write a new file for the no duplicate star file!")
+					{
+						Object _arguments[] = { "Error! couldn't write a new file for the no duplicate star file!" };
+						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						__messages.add( message );
+					}
+				}
+			}
+
+			try {
+				PrintWriter newFile = new PrintWriter(new BufferedWriter(new FileWriter(noDupsStarsFile)));
+				newFile.println(starsSet.size());
+				for (Iterator i = starsSet.iterator(); i.hasNext(); ){
+					newFile.println((String)i.next());
+				}
+				newFile.close();
+			}
+			catch (IOException ioError) {
+				{
+					// standardOutput<-println("Error! couldn't write to the new stars file with now duplicates!")
+					{
+						Object _arguments[] = { "Error! couldn't write to the new stars file with now duplicates!" };
+						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						__messages.add( message );
+					}
+				}
+			}
+
+			return starsSet.size();
+		}
 	}
 }

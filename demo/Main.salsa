@@ -2,12 +2,14 @@
 module demo;
 
 import java.io.*;
+import java.util.*;
 
 behavior Main {
    String starsFile = "testStars.txt";
-   int numStars;
+   String noDupsStarsFile = "testStarsNoDup.txt";
+   int numStars = 3;
    BufferedReader br;
-   int numActors = 2;
+   int numActors = 0;
 
    double minDist = Double.MAX_VALUE;
    double maxDist = 0.0;
@@ -17,26 +19,29 @@ behavior Main {
 
    int currentStar = 0;
 
-   void act( String[] argv ) {
-
+   void act( String[] argv ) 
+   {
+	  //remove the duplicates immediately, this func returns how many non-dup stars there are
+	  numStars = (int)removeDuplicates();
+	  standardOutput<-println("num of stars with no Dups: "+ numStars);
       try 
       {
-         br = new BufferedReader(new FileReader(starsFile));
+         br = new BufferedReader(new FileReader(noDupsStarsFile));
       }
-      catch (IOException ioe) 
+      catch (IOException ioError) 
       {
-         standardOutput<-println("[error] Can't open the file " + starsFile + " for reading.");
+         standardOutput<-println("Error! couldn't open" + noDupsStarsFile);
       }
-
+		/*
       try
       {
-      numStars = Integer.parseInt(br.readLine());
+		//numStars = Integer.parseInt(br.readLine());
       }
       catch (IOException e)
       {
          standardOutput<-println("[error] Number of stars must be an int");
       }
-      
+      */
       makeStars();
    }
 
@@ -50,7 +55,7 @@ behavior Main {
 
       for(int i = 0; i < numActors; i++)
       {
-         stars[i]<-init(i, starsFile, numStars, self);
+         stars[i]<-init(i, noDupsStarsFile, numStars, self);
          currentStar++;
       }
    }
@@ -80,7 +85,7 @@ behavior Main {
 
       /*if(currentStar < numStars)
       {
-         stars[i]<-init(i, starsFile, numStars, self);
+         stars[i]<-init(i, noDupsStarsFile, numStars, self);
          currentStar++;
       }*/
 
@@ -88,6 +93,52 @@ behavior Main {
       /*standardOutput<-println("Min: " + min);
       standardOutput<-println("Max: " + max);
       standardOutput<-println("Average: " + avg);*/
+   }
+   
+   //this function reads over the input file,stores every line in a set to avoid duplicates,
+   //then saves that set to a new file and returns the number of stars in the new file
+   int removeDuplicates()
+   {
+		HashSet starsSet = new HashSet();
+		try
+		{
+			BufferedReader reader = new BufferedReader(new FileReader(starsFile));
+			String line = reader.readLine();	//first readline gets rid of # of stars
+			line = reader.readLine();
+			
+			//loop over every line and add it to the set
+			while(line != null)
+			{
+				if(!line.equalsIgnoreCase(""))
+				{
+					starsSet.add(line);
+				}
+				line = reader.readLine();
+			}
+			reader.close();
+		}
+		catch(IOException ioError)
+		{
+			standardOutput<-println("Error! couldn't write a new file for the no duplicate star file!");
+		}
+		//now write to a file the set we just made
+		try
+		{
+			PrintWriter newFile = new PrintWriter(new BufferedWriter(new FileWriter(noDupsStarsFile)));
+			//gotta put that number of stars at the top of the file
+			newFile.println(starsSet.size());
+			
+			for(Iterator i = starsSet.iterator(); i.hasNext(); )
+			{
+				newFile.println((String)i.next());
+			}
+			newFile.close();
+		}
+		catch(IOException ioError)
+		{
+			standardOutput<- println("Error! couldn't write to the new stars file with now duplicates!");
+		}
+		return starsSet.size();
    }
 
 }
