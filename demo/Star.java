@@ -190,14 +190,6 @@ public class Star extends UniversalActor  {
 			self.activateGC();
 		}
 
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
-		}
-
 		public State() {
 			this(null, null);
 		}
@@ -271,11 +263,11 @@ public class Star extends UniversalActor  {
 		double z;
 		int numStars;
 		Main main;
-		public void act(String[] args) {
-		}
-		public void init(int i, String file, int _numStars, Main _main) {
+		int actorNum;
+		public void init(int i, String file, int _numStars, Main _main, int _actorNum) {
 			numStars = _numStars;
 			main = _main;
+			actorNum = _actorNum;
 			try {
 				pos = new double[numStars][3];
 				BufferedReader dataIn = new BufferedReader(new FileReader(file));
@@ -313,30 +305,32 @@ public class Star extends UniversalActor  {
 				throw new CurrentContinuationException();
 			}
 		}
-		public void calc(int other) {
+		public void calc(int myLoc) {
 			double min = Double.MAX_VALUE;
 			double[] minStar = new double[3];
 			double max = 0.0;
 			double[] maxStar = new double[3];
 			double avg = 0.0;
 			double[] myPos = { x, y, z };
-			for (int i = 0; i<numStars; i++)if (i!=other) {{
-				double dist = dist(i, other);
-				if (dist<min) {{
-					min = dist;
-					minStar = pos[other];
+			for (int i = 0; i<numStars; i++){
+				if (i!=myLoc) {{
+					double dist = dist(myLoc, i);
+					if (dist<min) {{
+						min = dist;
+						minStar = pos[i];
+					}
+}					if (dist>max) {{
+						max = dist;
+						maxStar = pos[i];
+					}
+}					avg += dist;
 				}
-}				if (dist>max) {{
-					max = dist;
-					maxStar = pos[other];
-				}
-}				avg += dist;
-			}
-}			avg /= (numStars-1);
+}			}
+			avg /= (numStars-1);
 			{
-				// main<-starDone(min, minStar, max, maxStar, avg, myPos)
+				// main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum)
 				{
-					Object _arguments[] = { min, minStar, max, maxStar, avg, myPos };
+					Object _arguments[] = { min, minStar, max, maxStar, avg, myPos, actorNum };
 					Message message = new Message( self, main, "starDone", _arguments, null, null );
 					__messages.add( message );
 				}
@@ -349,7 +343,7 @@ public class Star extends UniversalActor  {
 			double x2 = pos[star2][0];
 			double y2 = pos[star2][1];
 			double z2 = pos[star2][2];
-			return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1));
+			return Math.sqrt(((x2-x1)*(x2-x1))+((y2-y1)*(y2-y1))+((z2-z1)*(z2-z1)));
 		}
 	}
 }
