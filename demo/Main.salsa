@@ -9,6 +9,14 @@ behavior Main {
    BufferedReader br;
    int numActors = 2;
 
+   double minDist = Double.MAX_VALUE;
+   double maxDist = 0.0;
+   double minMax = Double.MAX_VALUE;
+   double maxMin = 0.0;
+   double avg = 0.0;
+
+   int currentStar = 0;
+
    void act( String[] argv ) {
 
       try 
@@ -42,13 +50,44 @@ behavior Main {
 
       for(int i = 0; i < numActors; i++)
       {
-         stars[i]<-calc(i, starsFile, numStars);
+         stars[i]<-init(i, starsFile, numStars, self);
+         currentStar++;
       }
    }
 
-   void starDone()
+   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos)
    {
-      standardOutput<-println("Star finished");
+      if(_min < minDist)
+      {
+         minDist = _min;
+      }
+      if(_max > maxDist)
+      {
+         maxDist = _max;
+      }
+      if(_min > maxMin)
+      {
+         maxMin = _min;
+      }
+      if(_max < minMax)
+      {
+         minMax = _max;
+      }
+      if(_avg < avg)
+      {
+         avg = _avg;
+      }
+
+      /*if(currentStar < numStars)
+      {
+         stars[i]<-init(i, starsFile, numStars, self);
+         currentStar++;
+      }*/
+
+
+      /*standardOutput<-println("Min: " + min);
+      standardOutput<-println("Max: " + max);
+      standardOutput<-println("Average: " + avg);*/
    }
 
 }

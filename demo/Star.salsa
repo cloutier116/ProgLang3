@@ -5,15 +5,21 @@ import java.io.*;
 behavior Star 
 {
 	double[][] pos;
+	double x;
+	double y;
+	double z;
+	int numStars;
+	Main main;
 
 
 	void act(String[] args)
 	{
 	}
 
-	void calc(int i, String file, int numStars)
+	void init(int i, String file, int _numStars, Main _main)
 	{
-		standardOutput<-print( i + "\n");
+		numStars = _numStars;
+		main = _main;
 
 		try 
 		{
@@ -29,13 +35,64 @@ behavior Star
 				pos[j][1] = Double.parseDouble(positions[1]);
 				pos[j][2] = Double.parseDouble(positions[2]);
 			}
-			//dataIn.close();
+			dataIn.close();
 		}
 		catch (IOException ioe)
 		{
 			standardOutput<-println("Error, can't open file " + file);
 		}
-		//main<-starDone();
+
+		x = pos[i][0];
+		y = pos[i][1];
+		z = pos[i][2];
+
+		calc(i)@currentContinuation;
+
+	}
+
+	void calc(int other)
+	{
+		double min = Double.MAX_VALUE;
+		double[] minStar = new double[3];
+		double max = 0.0;
+		double[] maxStar = new double[3];
+		double avg = 0.0;
+		double[] myPos = {x,y,z};
+
+		for(int i = 0; i < numStars; i++) if (i != other)
+		{
+			double dist = dist(i, other);
+			if(dist < min)
+			{
+				min = dist;
+				minStar = pos[other];
+			}
+			if(dist > max)
+			{
+				max = dist;
+				maxStar = pos[other];
+			}
+			avg += dist;
+
+		}
+
+		avg /= (numStars -1);
+
+		main<-starDone(min, minStar, max, maxStar, avg, myPos);
+
+	}
+
+	double dist(int star1, int star2)
+	{
+		double x1 = pos[star1][0];
+		double y1 = pos[star1][1];
+		double z1 = pos[star1][2];
+
+		double x2 = pos[star2][0];
+		double y2 = pos[star2][1];
+		double z2 = pos[star2][2];
+
+		return Math.sqrt((x2 - x1)*(x2-x1) + (y2 - y1)*(y2-y1) + (z2 - z1)*(z2-z1));
 	}
 }
 

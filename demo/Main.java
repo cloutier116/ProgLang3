@@ -269,6 +269,12 @@ public class Main extends UniversalActor  {
 		int numStars;
 		BufferedReader br;
 		int numActors = 2;
+		double minDist = Double.MAX_VALUE;
+		double maxDist = 0.0;
+		double minMax = Double.MAX_VALUE;
+		double maxMin = 0.0;
+		double avg = 0.0;
+		int currentStar = 0;
 		public void act(String[] argv) {
 			try {
 				br = new BufferedReader(new FileReader(starsFile));
@@ -314,24 +320,32 @@ public class Main extends UniversalActor  {
 			}
 			for (int i = 0; i<numActors; i++){
 				{
-					// stars[i]<-calc(i, starsFile, numStars)
+					// stars[i]<-init(i, starsFile, numStars, ((Main)self))
 					{
-						Object _arguments[] = { i, starsFile, numStars };
-						Message message = new Message( self, stars[i], "calc", _arguments, null, null );
+						Object _arguments[] = { i, starsFile, numStars, ((Main)self) };
+						Message message = new Message( self, stars[i], "init", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
+				currentStar++;
 			}
 		}
-		public void starDone() {
-			{
-				// standardOutput<-println("Star finished")
-				{
-					Object _arguments[] = { "Star finished" };
-					Message message = new Message( self, standardOutput, "println", _arguments, null, null );
-					__messages.add( message );
-				}
+		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos) {
+			if (_min<minDist) {{
+				minDist = _min;
 			}
-		}
+}			if (_max>maxDist) {{
+				maxDist = _max;
+			}
+}			if (_min>maxMin) {{
+				maxMin = _min;
+			}
+}			if (_max<minMax) {{
+				minMax = _max;
+			}
+}			if (_avg<avg) {{
+				avg = _avg;
+			}
+}		}
 	}
 }

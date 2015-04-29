@@ -266,17 +266,16 @@ public class Star extends UniversalActor  {
 		}
 
 		double[][] pos;
+		double x;
+		double y;
+		double z;
+		int numStars;
+		Main main;
 		public void act(String[] args) {
 		}
-		public void calc(int i, String file, int numStars) {
-			{
-				// standardOutput<-print(i+"\n")
-				{
-					Object _arguments[] = { i+"\n" };
-					Message message = new Message( self, standardOutput, "print", _arguments, null, null );
-					__messages.add( message );
-				}
-			}
+		public void init(int i, String file, int _numStars, Main _main) {
+			numStars = _numStars;
+			main = _main;
 			try {
 				pos = new double[numStars][3];
 				BufferedReader dataIn = new BufferedReader(new FileReader(file));
@@ -288,6 +287,7 @@ public class Star extends UniversalActor  {
 					pos[j][1] = Double.parseDouble(positions[1]);
 					pos[j][2] = Double.parseDouble(positions[2]);
 				}
+				dataIn.close();
 			}
 			catch (IOException ioe) {
 				{
@@ -300,6 +300,56 @@ public class Star extends UniversalActor  {
 				}
 			}
 
+			x = pos[i][0];
+			y = pos[i][1];
+			z = pos[i][2];
+			{
+				// calc(i)
+				{
+					Object _arguments[] = { i };
+					Message message = new Message( self, self, "calc", _arguments, null, currentMessage.getContinuationToken() );
+					__messages.add( message );
+				}
+				throw new CurrentContinuationException();
+			}
+		}
+		public void calc(int other) {
+			double min = Double.MAX_VALUE;
+			double[] minStar = new double[3];
+			double max = 0.0;
+			double[] maxStar = new double[3];
+			double avg = 0.0;
+			double[] myPos = { x, y, z };
+			for (int i = 0; i<numStars; i++)if (i!=other) {{
+				double dist = dist(i, other);
+				if (dist<min) {{
+					min = dist;
+					minStar = pos[other];
+				}
+}				if (dist>max) {{
+					max = dist;
+					maxStar = pos[other];
+				}
+}				avg += dist;
+			}
+}			avg /= (numStars-1);
+			{
+				// main<-starDone(min, minStar, max, maxStar, avg, myPos)
+				{
+					Object _arguments[] = { min, minStar, max, maxStar, avg, myPos };
+					Message message = new Message( self, main, "starDone", _arguments, null, null );
+					__messages.add( message );
+				}
+			}
+		}
+		public double dist(int star1, int star2) {
+			double x1 = pos[star1][0];
+			double y1 = pos[star1][1];
+			double z1 = pos[star1][2];
+			double x2 = pos[star2][0];
+			double y2 = pos[star2][1];
+			double z2 = pos[star2][2];
+			return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1));
 		}
 	}
 }
