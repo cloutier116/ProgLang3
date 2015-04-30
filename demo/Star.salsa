@@ -11,14 +11,16 @@ behavior Star
 	int numStars;
 	Main main;
 	int actorNum;
+	int theaterNum;
 
 
 	//grabs the values of the star locations into a 2d array, storing its own value as x,y,and z
-	void init(int i, String file, int _numStars, Main _main, int _actorNum)
+	void init(int i, String file, int _numStars, Main _main, int _actorNum, int _theaterNum)
 	{
 		numStars = _numStars;
 		main = _main;
 		actorNum = _actorNum;
+		theaterNum = _theaterNum;
 
 
 		try 
@@ -86,7 +88,7 @@ behavior Star
       	//standardOutput<-println("Max distance " +  max);
          
 		//report back to the main thread with your results
-		main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum);
+		main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum, theaterNum);
 
 	}
 

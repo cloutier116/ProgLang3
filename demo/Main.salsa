@@ -117,12 +117,23 @@ behavior Main {
          }
       }
 
-
-      for(int i = 0; i < numActors; i++) //start the initial group of stars calculating
+      if(distributed)
       {
+         for(int i = 0; i < numActors; i++) //start the initial group of stars calculating
+         {
 
-         stars[i]<-init(i, noDupsStarsFile, numStars, self, i);
-         currentStar++;
+            stars[i]<-init(i, noDupsStarsFile, numStars, self, i, i%theaters.size());
+            currentStar++;
+         }
+      }
+      else
+      {
+         for(int i = 0; i < numActors; i++) //start the initial group of stars calculating
+         {
+
+            stars[i]<-init(i, noDupsStarsFile, numStars, self, i, -1);
+            currentStar++;
+         }
       }
    }
 
@@ -285,11 +296,11 @@ behavior Main {
 		}
    }
    
-   void startNextStar(int actorNum) //checks to see if there are remaining stars, if so, starts them, otherwise, outputs results
+   void startNextStar(int actorNum, int theaterNum) //checks to see if there are remaining stars, if so, starts them, otherwise, outputs results
    {
      if(currentStar < numStars)
 	 {
-		stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, self, actorNum);
+		stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, self, actorNum, theaterNum);
 		currentStar++;
 		
 		if(distributed)
@@ -317,10 +328,10 @@ behavior Main {
    }
 
 
-   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum)
+   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum, int theaterNum)
    {
          
-         processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)@startNextStar(actorNum);
+         processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)@startNextStar(actorNum, theaterNum);
    }
 
    //once all stars are done their calculations, outputs the results 

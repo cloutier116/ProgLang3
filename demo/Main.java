@@ -359,18 +359,33 @@ public class Main extends UniversalActor  {
 					stars[i] = ((Star)new Star(this).construct());
 				}
 			}
-}			for (int i = 0; i<numActors; i++){
-				{
-					// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self), i)
+}			if (distributed) {{
+				for (int i = 0; i<numActors; i++){
 					{
-						Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self), i };
-						Message message = new Message( self, stars[i], "init", _arguments, null, null );
-						__messages.add( message );
+						// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self), i, i%theaters.size())
+						{
+							Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self), i, i%theaters.size() };
+							Message message = new Message( self, stars[i], "init", _arguments, null, null );
+							__messages.add( message );
+						}
 					}
+					currentStar++;
 				}
-				currentStar++;
 			}
-		}
+}			else {{
+				for (int i = 0; i<numActors; i++){
+					{
+						// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self), i, -1)
+						{
+							Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self), i, new Integer(-1) };
+							Message message = new Message( self, stars[i], "init", _arguments, null, null );
+							__messages.add( message );
+						}
+					}
+					currentStar++;
+				}
+			}
+}		}
 		public void processStar(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
 			if (_min<minDist) {{
 				minDist = _min;
@@ -475,12 +490,12 @@ break;					}
 				return returnVal;
 			}
 }		}
-		public void startNextStar(int actorNum) {
+		public void startNextStar(int actorNum, int theaterNum) {
 			if (currentStar<numStars) {{
 				{
-					// stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum)
+					// stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum, theaterNum)
 					{
-						Object _arguments[] = { currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum };
+						Object _arguments[] = { currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum, theaterNum };
 						Message message = new Message( self, stars[actorNum], "init", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -515,7 +530,7 @@ break;					}
 				}
 }			}
 }		}
-		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
+		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum, int theaterNum) {
 			{
 				Token token_2_0 = new Token();
 				// processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)
@@ -524,9 +539,9 @@ break;					}
 					Message message = new Message( self, self, "processStar", _arguments, null, token_2_0 );
 					__messages.add( message );
 				}
-				// startNextStar(actorNum)
+				// startNextStar(actorNum, theaterNum)
 				{
-					Object _arguments[] = { actorNum };
+					Object _arguments[] = { actorNum, theaterNum };
 					Message message = new Message( self, self, "startNextStar", _arguments, token_2_0, null );
 					__messages.add( message );
 				}

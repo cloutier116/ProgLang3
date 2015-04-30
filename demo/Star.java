@@ -264,10 +264,12 @@ public class Star extends UniversalActor  {
 		int numStars;
 		Main main;
 		int actorNum;
-		public void init(int i, String file, int _numStars, Main _main, int _actorNum) {
+		int theaterNum;
+		public void init(int i, String file, int _numStars, Main _main, int _actorNum, int _theaterNum) {
 			numStars = _numStars;
 			main = _main;
 			actorNum = _actorNum;
+			theaterNum = _theaterNum;
 			try {
 				pos = new double[numStars][3];
 				BufferedReader dataIn = new BufferedReader(new FileReader(file));
@@ -328,9 +330,9 @@ public class Star extends UniversalActor  {
 }			}
 			avg /= (numStars-1);
 			{
-				// main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum)
+				// main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum, theaterNum)
 				{
-					Object _arguments[] = { min, minStar, max, maxStar, avg, myPos, actorNum };
+					Object _arguments[] = { min, minStar, max, maxStar, avg, myPos, actorNum, theaterNum };
 					Message message = new Message( self, main, "starDone", _arguments, null, null );
 					__messages.add( message );
 				}
