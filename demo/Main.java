@@ -271,8 +271,8 @@ public class Main extends UniversalActor  {
 		String theaterFile = "theaters.txt";
 		int numStars = 3;
 		BufferedReader br;
-		int numActors = 10;
-		int actorsInUse = 10;
+		int numActors = 9;
+		int actorsInUse = 9;
 		boolean distributed = false;
 		Vector theaters = new Vector();
 		int[] theaterNumActors = new int[10000];
@@ -351,7 +351,7 @@ public class Main extends UniversalActor  {
 
 				for (int i = 0; i<numActors; i++){
 					stars[i] = ((Star)new Star(new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i),this).construct());
-					theaterNumActors[i%numActors] += 1;
+					theaterNumActors[i%theaters.size()] += 1;
 				}
 			}
 }			else {{
@@ -502,7 +502,8 @@ break;					}
 				}
 				currentStar++;
 				if (distributed) {{
-					if (smallestTheater()!=-1&&theaters.size()!=1) {{
+					int st = smallestTheater();
+					if (st!=-1&&st!=theaterNum) {{
 						{
 							// stars[actorNum]<-migrate(theaters.get(smallestTheater()))
 							{
