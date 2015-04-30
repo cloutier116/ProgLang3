@@ -7,3 +7,6 @@ Usage:
 
 	the program doesn't terminate upon completion when in distributed mode, however, the results print normally.
 	-the salsa release tutorial seems to indicate that this is normal behavior
+
+	The number of actors that are created is set at the top of the file in the variables numActors and actorsInUse
+	-They need to be the same value
