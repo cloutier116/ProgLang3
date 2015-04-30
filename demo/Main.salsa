@@ -4,6 +4,9 @@ module demo;
 import java.io.*;
 import java.util.*;
 
+//Chris Cloutier
+//Spencer Johnson
+
 behavior Main {
    String starsFile = "testStars.txt";    //files where the stars originate
    String noDupsStarsFile = "testStarsNoDup.txt";
