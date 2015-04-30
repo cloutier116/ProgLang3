@@ -41,12 +41,13 @@ behavior Main {
    Star[] stars;
    
    //used for fault tolerancy, each index refers to if that indexed star has finished and returned data
-   boolean[] starHasReturned;
+   boolean[] starHasReturned; // is set once we know the amount of stars
 
    void act( String[] argv ) 
    {
 	  //remove the duplicates immediately, this func returns how many non-dup stars there are
 	  numStars = (int)removeDuplicates();
+	  starHasReturned = new boolean[numStars];
 
       try 
       {
@@ -325,6 +326,10 @@ behavior Main {
 		{
 		   actorsInUse--;
 		}
+		else if(distributed && redoStarsThatFailed())	//test for faults
+		{
+			return;
+		}
 		else
 		{
 		   //standardOutput<-print("(" + maxMinStar[0][0] +","  + maxMinStar[0][1] +"," + maxMinStar[0][2] +")  \n");
@@ -332,11 +337,33 @@ behavior Main {
 		}
 	 }
    }
-
-
-   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum, int theaterNum)
+   //this is used for fault tolerance, returns true there were any stars that failed and have been restarted
+   boolean redoStarsThatFailed()
    {
-         //starHasReturned[]
+		int actorIndex = 0;
+		for(int i = 0; i < numStars; i++)
+		{
+			if(!starHasReturned[i])
+			{
+				if(actorIndex == numActors)	//you ran out of actors this runthrough so just return and save computation
+					return true;
+				
+				//find a theater to put this actor in
+				int theatNum = smallestTheater();
+				if(theatNum == -1) theatNum = 0;
+				stars[actorIndex]<-init(i, noDupsStarsFile, numStars, self, actorIndex, theatNum);
+				actorIndex++;
+			}
+		}
+		if(actorIndex == 0)		//return false if there were no stars that needs to be redone
+			return false;
+		else
+			return true;
+   }
+
+   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum, int theaterNum, int _starIndex)
+   {
+         starHasReturned[_starIndex] = true;
          processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)@startNextStar(actorNum, theaterNum);
    }
 

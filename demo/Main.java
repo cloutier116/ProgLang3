@@ -297,6 +297,7 @@ public class Main extends UniversalActor  {
 		boolean[] starHasReturned;
 		public void act(String[] argv) {
 			numStars = (int)removeDuplicates();
+			starHasReturned = new boolean[numStars];
 			try {
 				br = new BufferedReader(new FileReader(noDupsStarsFile));
 			}
@@ -521,6 +522,9 @@ break;					}
 				if (actorsInUse>1) {{
 					actorsInUse--;
 				}
+}				else {if (distributed&&redoStarsThatFailed()) {{
+					return;
+				}
 }				else {{
 					{
 						// outputResults()
@@ -531,9 +535,31 @@ break;					}
 						}
 					}
 				}
-}			}
+}}			}
 }		}
-		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum, int theaterNum) {
+		public boolean redoStarsThatFailed() {
+			int actorIndex = 0;
+			for (int i = 0; i<numStars; i++){
+				if (!starHasReturned[i]) {{
+					if (actorIndex==numActors) {					return true;
+}					int theatNum = smallestTheater();
+					if (theatNum==-1) {theatNum = 0;
+}					{
+						// stars[actorIndex]<-init(i, noDupsStarsFile, numStars, ((Main)self), actorIndex, theatNum)
+						{
+							Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self), actorIndex, theatNum };
+							Message message = new Message( self, stars[actorIndex], "init", _arguments, null, null );
+							__messages.add( message );
+						}
+					}
+					actorIndex++;
+				}
+}			}
+			if (actorIndex==0) {			return false;
+}			else {			return true;
+}		}
+		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum, int theaterNum, int _starIndex) {
+			starHasReturned[_starIndex] = true;
 			{
 				Token token_2_0 = new Token();
 				// processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)
