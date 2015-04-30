@@ -273,6 +273,7 @@ public class Main extends UniversalActor  {
 		BufferedReader br;
 		int numActors = 9;
 		int actorsInUse = 9;
+		String nameServer = "uan://129.161.37.227/a";
 		boolean distributed = false;
 		Vector theaters = new Vector();
 		int[] theaterNumActors = new int[10000];
@@ -293,6 +294,7 @@ public class Main extends UniversalActor  {
 		int avgFound = 0;
 		int currentStar = 0;
 		Star[] stars;
+		boolean[] starHasReturned;
 		public void act(String[] argv) {
 			numStars = (int)removeDuplicates();
 			try {
@@ -350,7 +352,7 @@ public class Main extends UniversalActor  {
 				}
 
 				for (int i = 0; i<numActors; i++){
-					stars[i] = ((Star)new Star(new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i),this).construct());
+					stars[i] = ((Star)new Star(new UAN(nameServer+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i),this).construct());
 					theaterNumActors[i%theaters.size()] += 1;
 				}
 			}
