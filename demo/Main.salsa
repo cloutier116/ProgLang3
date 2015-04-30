@@ -292,11 +292,14 @@ behavior Main {
 		stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, self, actorNum);
 		currentStar++;
 		
-		//migrate this actor if the actors aren't evenly distributed amongst the theaters
-		//also don't migrate if there is only one theater
-		if(smallestTheater() != -1 && theaters.size() != 1)
+		if(distributed)
 		{
-			stars[actorNum] <-migrate(theaters.get(smallestTheater()));
+			//migrate this actor if the actors aren't evenly distributed amongst the theaters
+			//also don't migrate if there is only one theater
+			if(smallestTheater() != -1 && theaters.size() != 1)
+			{
+				stars[actorNum] <-migrate(theaters.get(smallestTheater()));
+			}
 		}
 	 }
 	 else

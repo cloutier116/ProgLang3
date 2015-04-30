@@ -338,7 +338,7 @@ public class Main extends UniversalActor  {
 					}
 					theaterIn.close();
 				}
-				catch (IOException ioe) {
+				catch (IOException ioError) {
 					{
 						// standardOutput<-println("Error, can't open theater file")
 						{
@@ -486,16 +486,18 @@ break;					}
 					}
 				}
 				currentStar++;
-				if (smallestTheater()!=-1&&theaters.size()!=1) {{
-					{
-						// stars[actorNum]<-migrate(theaters.get(smallestTheater()))
+				if (distributed) {{
+					if (smallestTheater()!=-1&&theaters.size()!=1) {{
 						{
-							Object _arguments[] = { theaters.get(smallestTheater()) };
-							Message message = new Message( self, stars[actorNum], "migrate", _arguments, null, null );
-							__messages.add( message );
+							// stars[actorNum]<-migrate(theaters.get(smallestTheater()))
+							{
+								Object _arguments[] = { theaters.get(smallestTheater()) };
+								Message message = new Message( self, stars[actorNum], "migrate", _arguments, null, null );
+								__messages.add( message );
+							}
 						}
 					}
-				}
+}				}
 }			}
 }			else {{
 				if (actorsInUse>1) {{

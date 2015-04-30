@@ -281,7 +281,7 @@ public class Star extends UniversalActor  {
 				}
 				dataIn.close();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioError) {
 				{
 					// standardOutput<-println("Error, can't open file "+file)
 					{
