@@ -13,6 +13,7 @@ behavior Star
 	int actorNum;
 
 
+	//grabs the values of the star locations into a 2d array, storing its own value as x,y,and z
 	void init(int i, String file, int _numStars, Main _main, int _actorNum)
 	{
 		numStars = _numStars;
@@ -49,6 +50,8 @@ behavior Star
 
 	}
 
+	//loops through the array of stars, finding the smallest and largest distance between itself and another star
+	//calculates average distance as well
 	void calc(int myLoc)
 	{
 		double min = Double.MAX_VALUE;
@@ -60,7 +63,7 @@ behavior Star
 
 		for(int i = 0; i < numStars; i++)
 		{ 
-			if (i != myLoc)
+			if (i != myLoc) //don't bother comparing to yourself
 			{
 				double dist = dist(myLoc, i);
 				if(dist < min)
@@ -73,20 +76,21 @@ behavior Star
 					max = dist;
 					maxStar = pos[i];
 				}
-				avg += dist;
+				avg += dist; //sum the distances
 			}
 		}
 
-		avg /= (numStars -1);
+		avg /= (numStars -1); //then divide to get avg
 
 		//standardOutput<-println("Min distance " +  min)@
       	//standardOutput<-println("Max distance " +  max);
          
-
+		//report back to the main thread with your results
 		main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum);
 
 	}
 
+	//helper function that calculates the distance between to stars
 	double dist(int star1, int star2)
 	{
 		double x1 = pos[star1][0];
