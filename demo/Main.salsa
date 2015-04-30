@@ -14,8 +14,12 @@ behavior Main {
    int actorsInUse = 10;
 
    boolean distributed = false;
-
-
+   
+   //stores the string names of all theaters
+   Vector theaters = new Vector();
+   //parellel array to theaters, each index stores how many actors are on theaters[i]
+   int[] theaterNumActors = new int[10000];
+	
    double minDist = Double.MAX_VALUE;
    double[][] minStar = new double[10][3];
    int minStarsFound = 0;
@@ -85,7 +89,6 @@ behavior Main {
 
       if(distributed)
       {
-         Vector theaters = new Vector();
          String theater;
          try{
             BufferedReader theaterIn = new BufferedReader(new FileReader(theaterFile));
@@ -102,7 +105,9 @@ behavior Main {
          for(int i = 0; i < numActors; i++)
          {
             stars[i] = new Star() at (new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i));
-         }
+			//updates how many actors this theater has
+			theaterNumActors[i%numActors]+= 1;
+		 }
       }
       else
       {
@@ -255,26 +260,57 @@ behavior Main {
             avgFound+=1;
          }
    }
-
+   //returns the theater index with the lowest amount of actors being used
+   //returns -1 if the actors are all evenly distributed
+   int smallestTheater()
+   {
+		int least = numActors/theaters.size();
+		int returnVal = 0;
+		for(int i = 0; i < theaters.size(); i++)
+		{
+			if(theaterNumActors[i] < least);
+			{
+				least = theaterNumActors[i];
+				returnVal = i;
+			}
+		}
+		//return -1 if they are all equal
+		if(least == numActors/theaters.size())
+		{
+			return -1;
+		}
+		else
+		{
+			return returnVal;
+		}
+   }
+   
    void startNextStar(int actorNum) //checks to see if there are remaining stars, if so, starts them, otherwise, outputs results
    {
-      if(currentStar < numStars)
-         {
-            stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, self, actorNum);
-            currentStar++;
-         }
-         else
-         {
-            if(actorsInUse > 1)
-            {
-               actorsInUse--;
-            }
-            else
-            {
-               //standardOutput<-print("(" + maxMinStar[0][0] +","  + maxMinStar[0][1] +"," + maxMinStar[0][2] +")  \n");
-               outputResults();
-            }
-         }
+     if(currentStar < numStars)
+	 {
+		stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, self, actorNum);
+		currentStar++;
+		
+		//migrate this actor if the actors aren't evenly distributed amongst the theaters
+		//also don't migrate if there is only one theater
+		if(smallestTheater() != -1 && theaters.size() != 1)
+		{
+			stars[actorNum] <-migrate(theaters.get(smallestTheater()));
+		}
+	 }
+	 else
+	 {
+		if(actorsInUse > 1)
+		{
+		   actorsInUse--;
+		}
+		else
+		{
+		   //standardOutput<-print("(" + maxMinStar[0][0] +","  + maxMinStar[0][1] +"," + maxMinStar[0][2] +")  \n");
+		   outputResults();
+		}
+	 }
    }
 
 

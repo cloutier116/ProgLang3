@@ -274,6 +274,8 @@ public class Main extends UniversalActor  {
 		int numActors = 10;
 		int actorsInUse = 10;
 		boolean distributed = false;
+		Vector theaters = new Vector();
+		int[] theaterNumActors = new int[10000];
 		double minDist = Double.MAX_VALUE;
 		double[][] minStar = new double[10][3];
 		int minStarsFound = 0;
@@ -328,7 +330,6 @@ public class Main extends UniversalActor  {
 			}
 }			stars = new Star[numActors];
 			if (distributed) {{
-				Vector theaters = new Vector();
 				String theater;
 				try {
 					BufferedReader theaterIn = new BufferedReader(new FileReader(theaterFile));
@@ -350,6 +351,7 @@ public class Main extends UniversalActor  {
 
 				for (int i = 0; i<numActors; i++){
 					stars[i] = ((Star)new Star(new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i),this).construct());
+					theaterNumActors[i%numActors] += 1;
 				}
 			}
 }			else {{
@@ -457,6 +459,22 @@ break;					}
 				avgFound += 1;
 			}
 }}		}
+		public int smallestTheater() {
+			int least = numActors/theaters.size();
+			int returnVal = 0;
+			for (int i = 0; i<theaters.size(); i++){
+				if (theaterNumActors[i]<least) {;}{
+					least = theaterNumActors[i];
+					returnVal = i;
+				}
+			}
+			if (least==numActors/theaters.size()) {{
+				return -1;
+			}
+}			else {{
+				return returnVal;
+			}
+}		}
 		public void startNextStar(int actorNum) {
 			if (currentStar<numStars) {{
 				{
@@ -468,7 +486,17 @@ break;					}
 					}
 				}
 				currentStar++;
-			}
+				if (smallestTheater()!=-1&&theaters.size()!=1) {{
+					{
+						// stars[actorNum]<-migrate(theaters.get(smallestTheater()))
+						{
+							Object _arguments[] = { theaters.get(smallestTheater()) };
+							Message message = new Message( self, stars[actorNum], "migrate", _arguments, null, null );
+							__messages.add( message );
+						}
+					}
+				}
+}			}
 }			else {{
 				if (actorsInUse>1) {{
 					actorsInUse--;
