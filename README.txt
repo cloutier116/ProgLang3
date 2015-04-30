@@ -12,3 +12,4 @@ Usage:
 	-They need to be the same value
 
 	When running distributed, after starting the theaters, put the IP address that they're listening on into the theaters.txt file before running
+	-also put the IP of the nameserver into the variable nameServer in the format "uan://<IP>/a"
