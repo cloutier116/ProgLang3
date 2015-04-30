@@ -59,7 +59,7 @@ behavior Main {
       }
       catch (IOException e)
       {
-         standardOutput<-println("[error] Number of stars must be an int");
+         standardOutput<-println("Error: Number of stars must be an int");
       }
       */
 
@@ -98,7 +98,7 @@ behavior Main {
             }
             theaterIn.close();
          }
-         catch(IOException ioe) {
+         catch(IOException ioError) {
             standardOutput<-println("Error, can't open theater file");
          }
 
