@@ -10,3 +10,5 @@ Usage:
 
 	The number of actors that are created is set at the top of the file in the variables numActors and actorsInUse
 	-They need to be the same value
+
+	When running distributed, after starting the theaters, put the IP address that they're listening on into the theaters.txt file before running
