@@ -10,16 +10,15 @@ behavior Star
 	double z;
 	int numStars;
 	Main main;
+	int actorNum;
 
 
-	void act(String[] args)
-	{
-	}
-
-	void init(int i, String file, int _numStars, Main _main)
+	void init(int i, String file, int _numStars, Main _main, int _actorNum)
 	{
 		numStars = _numStars;
 		main = _main;
+		actorNum = _actorNum;
+
 
 		try 
 		{
@@ -50,7 +49,7 @@ behavior Star
 
 	}
 
-	void calc(int other)
+	void calc(int myLoc)
 	{
 		double min = Double.MAX_VALUE;
 		double[] minStar = new double[3];
@@ -59,26 +58,32 @@ behavior Star
 		double avg = 0.0;
 		double[] myPos = {x,y,z};
 
-		for(int i = 0; i < numStars; i++) if (i != other)
-		{
-			double dist = dist(i, other);
-			if(dist < min)
+		for(int i = 0; i < numStars; i++)
+		{ 
+			if (i != myLoc)
 			{
-				min = dist;
-				minStar = pos[other];
+				double dist = dist(myLoc, i);
+				if(dist < min)
+				{
+					min = dist;
+					minStar = pos[i];
+				}
+				if(dist > max)
+				{
+					max = dist;
+					maxStar = pos[i];
+				}
+				avg += dist;
 			}
-			if(dist > max)
-			{
-				max = dist;
-				maxStar = pos[other];
-			}
-			avg += dist;
-
 		}
 
 		avg /= (numStars -1);
 
-		main<-starDone(min, minStar, max, maxStar, avg, myPos);
+		//standardOutput<-println("Min distance " +  min)@
+      	//standardOutput<-println("Max distance " +  max);
+         
+
+		main<-starDone(min, minStar, max, maxStar, avg, myPos, actorNum);
 
 	}
 
@@ -92,21 +97,6 @@ behavior Star
 		double y2 = pos[star2][1];
 		double z2 = pos[star2][2];
 
-		return Math.sqrt((x2 - x1)*(x2-x1) + (y2 - y1)*(y2-y1) + (z2 - z1)*(z2-z1));
+		return Math.sqrt(((x2 - x1)*(x2-x1)) + ((y2 - y1)*(y2-y1)) + ((z2 - z1)*(z2-z1)));
 	}
 }
-
-/*main()
-	Remove Duplicates
-	Create actors and give star behavior
-ImDone()
-	get stats, update current best
-	give a new job
-
-
-
-Star
-	read files
-	generate double[][]
-	loop through stars and do calculations
-	*/

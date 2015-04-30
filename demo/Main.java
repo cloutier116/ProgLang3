@@ -270,13 +270,25 @@ public class Main extends UniversalActor  {
 		String noDupsStarsFile = "testStarsNoDup.txt";
 		int numStars = 3;
 		BufferedReader br;
-		int numActors = 0;
+		int numActors = 5;
+		int actorsInUse = 5;
 		double minDist = Double.MAX_VALUE;
+		double[][] minStar = new double[10][3];
+		int minStarsFound = 0;
 		double maxDist = 0.0;
+		double[][] maxStar = new double[10][3];
+		int maxStarsFound = 0;
 		double minMax = Double.MAX_VALUE;
+		double[][] minMaxStar = new double[5][3];
+		int minMaxFound = 0;
 		double maxMin = 0.0;
-		double avg = 0.0;
+		double[][] maxMinStar = new double[5][3];
+		int maxMinFound = 0;
+		double avg = Double.MAX_VALUE;
+		double[][] avgStar = new double[5][3];
+		int avgFound = 0;
 		int currentStar = 0;
+		Star[] stars;
 		public void act(String[] argv) {
 			numStars = (int)removeDuplicates();
 			{
@@ -311,15 +323,19 @@ public class Main extends UniversalActor  {
 			}
 		}
 		public void makeStars() {
-			Star[] stars = new Star[numStars];
+			if (numStars<numActors) {{
+				numActors = numStars;
+				actorsInUse = numStars;
+			}
+}			stars = new Star[numActors];
 			for (int i = 0; i<numActors; i++){
 				stars[i] = ((Star)new Star(this).construct());
 			}
 			for (int i = 0; i<numActors; i++){
 				{
-					// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self))
+					// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self), i)
 					{
-						Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self) };
+						Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self), i };
 						Message message = new Message( self, stars[i], "init", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -327,23 +343,282 @@ public class Main extends UniversalActor  {
 				currentStar++;
 			}
 		}
-		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos) {
+		public void processStar(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
 			if (_min<minDist) {{
 				minDist = _min;
+				minStar = new double[10][3];
+				minStar[0] = _myPos;
+				minStar[1] = _minStar;
+				minStarsFound = 2;
 			}
-}			if (_max>maxDist) {{
+}			else {if (_min==minDist) {{
+				boolean repeat = false;
+				for (int i = 0; i<minStarsFound; i += 2){
+					if (minStar[i][0]==_minStar[0]&&minStar[i][1]==_minStar[1]&&minStar[i][2]==_minStar[2]&&minStar[i+1][0]==_myPos[0]&&minStar[i+1][1]==_myPos[1]&&minStar[i+1][2]==_myPos[2]) {{
+						repeat = true;
+break;					}
+}				}
+				if (!repeat) {{
+					minStar[minStarsFound] = _myPos;
+					minStar[minStarsFound+1] = _minStar;
+					minStarsFound += 2;
+				}
+}			}
+}}			if (_max>maxDist) {{
 				maxDist = _max;
+				maxStar = new double[10][3];
+				maxStar[0] = _myPos;
+				maxStar[1] = _maxStar;
+				maxStarsFound = 2;
 			}
-}			if (_min>maxMin) {{
+}			else {if (_max==maxDist) {{
+				boolean repeat = false;
+				for (int i = 0; i<maxStarsFound; i += 2){
+					if (maxStar[i][0]==_maxStar[0]&&maxStar[i][1]==_maxStar[1]&&maxStar[i][2]==_maxStar[2]&&maxStar[i+1][0]==_myPos[0]&&maxStar[i+1][1]==_myPos[1]&&maxStar[i+1][2]==_myPos[2]) {{
+						repeat = true;
+break;					}
+}				}
+				if (!repeat) {{
+					maxStar[maxStarsFound] = _myPos;
+					maxStar[maxStarsFound+1] = _maxStar;
+					maxStarsFound += 2;
+				}
+}			}
+}}			if (_min>maxMin) {{
 				maxMin = _min;
+				maxMinStar = new double[5][3];
+				maxMinStar[0] = _myPos;
+				maxMinFound = 1;
 			}
-}			if (_max<minMax) {{
+}			else {if (_min==maxMin) {{
+				boolean repeat = false;
+				for (int i = 0; i<maxMinFound; i++){
+					if (maxMinStar[i][0]==_minStar[0]&&maxMinStar[i][1]==_minStar[1]&&maxMinStar[i][2]==_minStar[2]&&maxMinStar[i+1][0]==_myPos[0]&&maxMinStar[i+1][1]==_myPos[1]&&maxMinStar[i+1][2]==_myPos[2]) {{
+						repeat = true;
+break;					}
+}				}
+				if (!repeat) {{
+					maxMinStar[maxStarsFound] = _myPos;
+					maxMinFound += 1;
+				}
+}			}
+}}			if (_max<minMax) {{
 				minMax = _max;
+				minMaxStar = new double[5][3];
+				minMaxStar[0] = _myPos;
+				minMaxFound = 1;
 			}
-}			if (_avg<avg) {{
+}			else {if (_max==minMax) {{
+				boolean repeat = false;
+				for (int i = 0; i<minMaxFound; i++){
+					if (minMaxStar[i][0]==_maxStar[0]&&minMaxStar[i][1]==_maxStar[1]&&minMaxStar[i][2]==_maxStar[2]&&minMaxStar[i+1][0]==_myPos[0]&&minMaxStar[i+1][1]==_myPos[1]&&minMaxStar[i+1][2]==_myPos[2]) {{
+						repeat = true;
+break;					}
+}				}
+				if (!repeat) {{
+					minMaxStar[maxStarsFound] = _myPos;
+					minMaxFound += 1;
+				}
+}			}
+}}			if (_avg<avg) {{
 				avg = _avg;
+				avgStar = new double[5][3];
+				avgStar[0] = _myPos;
+				avgFound = 1;
 			}
+}			else {if (_avg==avg) {{
+				avgStar[avgFound] = _myPos;
+				avgFound += 1;
+			}
+}}		}
+		public void startNextStar(int actorNum) {
+			if (currentStar<numStars) {{
+				{
+					// stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum)
+					{
+						Object _arguments[] = { currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum };
+						Message message = new Message( self, stars[actorNum], "init", _arguments, null, null );
+						__messages.add( message );
+					}
+				}
+				currentStar++;
+			}
+}			else {{
+				if (actorsInUse>1) {{
+					actorsInUse--;
+				}
+}				else {{
+					{
+						// outputResults()
+						{
+							Object _arguments[] = {  };
+							Message message = new Message( self, self, "outputResults", _arguments, null, null );
+							__messages.add( message );
+						}
+					}
+				}
+}			}
 }		}
+		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
+			{
+				Token token_2_0 = new Token();
+				// processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)
+				{
+					Object _arguments[] = { _min, _minStar, _max, _maxStar, _avg, _myPos, actorNum };
+					Message message = new Message( self, self, "processStar", _arguments, null, token_2_0 );
+					__messages.add( message );
+				}
+				// startNextStar(actorNum)
+				{
+					Object _arguments[] = { actorNum };
+					Message message = new Message( self, self, "startNextStar", _arguments, token_2_0, null );
+					__messages.add( message );
+				}
+			}
+		}
+		public void outputResults() {
+			{
+				Token token_2_0 = new Token();
+				Token token_2_1 = new Token();
+				Token token_2_2 = new Token();
+				Token token_2_3 = new Token();
+				Token token_2_4 = new Token();
+				Token token_2_5 = new Token();
+				Token token_2_6 = new Token();
+				Token token_2_7 = new Token();
+				Token token_2_8 = new Token();
+				Token token_2_9 = new Token();
+				Token token_2_10 = new Token();
+				Token token_2_11 = new Token();
+				Token token_2_12 = new Token();
+				Token token_2_13 = new Token();
+				// standardOutput<-println(minDist+"  // minimal pairwise distance")
+				{
+					Object _arguments[] = { minDist+"  // minimal pairwise distance" };
+					Message message = new Message( self, standardOutput, "println", _arguments, null, token_2_0 );
+					__messages.add( message );
+				}
+				// join block
+				token_2_1.setJoinDirector();
+				for (int i = 0; i<minStarsFound; i += 2){
+					{
+						// standardOutput<-print("("+minStar[i][0]+","+minStar[i][1]+","+minStar[i][2]+")\t("+minStar[i+1][0]+","+minStar[i+1][1]+","+minStar[i+1][2]+")\n")
+						{
+							Object _arguments[] = { "("+minStar[i][0]+","+minStar[i][1]+","+minStar[i][2]+")\t("+minStar[i+1][0]+","+minStar[i+1][1]+","+minStar[i+1][2]+")\n" };
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_0, token_2_1 );
+							__messages.add( message );
+						}
+					}
+				}
+				addJoinToken(token_2_1);
+				// standardOutput<-println("")
+				{
+					Object _arguments[] = { "" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_1, token_2_2 );
+					__messages.add( message );
+				}
+				// standardOutput<-println(maxDist+"  // maximal pairwise distance")
+				{
+					Object _arguments[] = { maxDist+"  // maximal pairwise distance" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_2, token_2_3 );
+					__messages.add( message );
+				}
+				// join block
+				token_2_4.setJoinDirector();
+				for (int i = 0; i<maxStarsFound; i += 2){
+					{
+						// standardOutput<-print("("+maxStar[i][0]+","+maxStar[i][1]+","+maxStar[i][2]+")\t("+maxStar[i+1][0]+","+maxStar[i+1][1]+","+maxStar[i+1][2]+")\n")
+						{
+							Object _arguments[] = { "("+maxStar[i][0]+","+maxStar[i][1]+","+maxStar[i][2]+")\t("+maxStar[i+1][0]+","+maxStar[i+1][1]+","+maxStar[i+1][2]+")\n" };
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_3, token_2_4 );
+							__messages.add( message );
+						}
+					}
+				}
+				addJoinToken(token_2_4);
+				// standardOutput<-println("")
+				{
+					Object _arguments[] = { "" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_4, token_2_5 );
+					__messages.add( message );
+				}
+				// standardOutput<-println(minMax+"  // minimum maximal distance")
+				{
+					Object _arguments[] = { minMax+"  // minimum maximal distance" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_5, token_2_6 );
+					__messages.add( message );
+				}
+				// join block
+				token_2_7.setJoinDirector();
+				for (int i = 0; i<minMaxFound; i++){
+					{
+						// standardOutput<-print("("+minMaxStar[i][0]+","+minMaxStar[i][1]+","+minMaxStar[i][2]+")  \n")
+						{
+							Object _arguments[] = { "("+minMaxStar[i][0]+","+minMaxStar[i][1]+","+minMaxStar[i][2]+")  \n" };
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_6, token_2_7 );
+							__messages.add( message );
+						}
+					}
+				}
+				addJoinToken(token_2_7);
+				// standardOutput<-println("")
+				{
+					Object _arguments[] = { "" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_7, token_2_8 );
+					__messages.add( message );
+				}
+				// standardOutput<-println(maxMin+"  // maximum minimal distance")
+				{
+					Object _arguments[] = { maxMin+"  // maximum minimal distance" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_8, token_2_9 );
+					__messages.add( message );
+				}
+				// join block
+				token_2_10.setJoinDirector();
+				for (int i = 0; i<maxMinFound; i++){
+					{
+						// standardOutput<-print("("+maxMinStar[i][0]+","+maxMinStar[i][1]+","+maxMinStar[i][2]+")  \n")
+						{
+							Object _arguments[] = { "("+maxMinStar[i][0]+","+maxMinStar[i][1]+","+maxMinStar[i][2]+")  \n" };
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_9, token_2_10 );
+							__messages.add( message );
+						}
+					}
+				}
+				addJoinToken(token_2_10);
+				// standardOutput<-println("")
+				{
+					Object _arguments[] = { "" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_10, token_2_11 );
+					__messages.add( message );
+				}
+				// standardOutput<-println(avg+"  // minimal average distance")
+				{
+					Object _arguments[] = { avg+"  // minimal average distance" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_11, token_2_12 );
+					__messages.add( message );
+				}
+				// join block
+				token_2_13.setJoinDirector();
+				for (int i = 0; i<avgFound; i++){
+					{
+						// standardOutput<-print("("+avgStar[i][0]+","+avgStar[i][1]+","+avgStar[i][2]+")  \n")
+						{
+							Object _arguments[] = { "("+avgStar[i][0]+","+avgStar[i][1]+","+avgStar[i][2]+")  \n" };
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_12, token_2_13 );
+							__messages.add( message );
+						}
+					}
+				}
+				addJoinToken(token_2_13);
+				// standardOutput<-println("")
+				{
+					Object _arguments[] = { "" };
+					Message message = new Message( self, standardOutput, "println", _arguments, token_2_13, null );
+					__messages.add( message );
+				}
+			}
+		}
 		public int removeDuplicates() {
 			HashSet starsSet = new HashSet();
 			try {
