@@ -268,10 +268,12 @@ public class Main extends UniversalActor  {
 
 		String starsFile = "testStars.txt";
 		String noDupsStarsFile = "testStarsNoDup.txt";
+		String theaterFile = "theaters.txt";
 		int numStars = 3;
 		BufferedReader br;
-		int numActors = 5;
-		int actorsInUse = 5;
+		int numActors = 10;
+		int actorsInUse = 10;
+		boolean distributed = false;
 		double minDist = Double.MAX_VALUE;
 		double[][] minStar = new double[10][3];
 		int minStarsFound = 0;
@@ -291,14 +293,6 @@ public class Main extends UniversalActor  {
 		Star[] stars;
 		public void act(String[] argv) {
 			numStars = (int)removeDuplicates();
-			{
-				// standardOutput<-println("num of stars with no Dups: "+numStars)
-				{
-					Object _arguments[] = { "num of stars with no Dups: "+numStars };
-					Message message = new Message( self, standardOutput, "println", _arguments, null, null );
-					__messages.add( message );
-				}
-			}
 			try {
 				br = new BufferedReader(new FileReader(noDupsStarsFile));
 			}
@@ -313,6 +307,11 @@ public class Main extends UniversalActor  {
 				}
 			}
 
+			for (int i = 0; i<argv.length; i++){
+				if (argv[i].equals("-d")) {{
+					distributed = true;
+				}
+}			}
 			{
 				// makeStars()
 				{
@@ -328,10 +327,37 @@ public class Main extends UniversalActor  {
 				actorsInUse = numStars;
 			}
 }			stars = new Star[numActors];
-			for (int i = 0; i<numActors; i++){
-				stars[i] = ((Star)new Star(this).construct());
+			if (distributed) {{
+				Vector theaters = new Vector();
+				String theater;
+				try {
+					BufferedReader theaterIn = new BufferedReader(new FileReader(theaterFile));
+					while ((theater=theaterIn.readLine())!=null) {
+						theaters.add(theater);
+					}
+					theaterIn.close();
+				}
+				catch (IOException ioe) {
+					{
+						// standardOutput<-println("Error, can't open theater file")
+						{
+							Object _arguments[] = { "Error, can't open theater file" };
+							Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+							__messages.add( message );
+						}
+					}
+				}
+
+				for (int i = 0; i<numActors; i++){
+					stars[i] = ((Star)new Star(new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i),this).construct());
+				}
 			}
-			for (int i = 0; i<numActors; i++){
+}			else {{
+				for (int i = 0; i<numActors; i++){
+					stars[i] = ((Star)new Star(this).construct());
+				}
+			}
+}			for (int i = 0; i<numActors; i++){
 				{
 					// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self), i)
 					{

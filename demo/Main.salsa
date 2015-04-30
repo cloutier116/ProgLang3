@@ -5,12 +5,15 @@ import java.io.*;
 import java.util.*;
 
 behavior Main {
-   String starsFile = "testStars.txt";
+   String starsFile = "testStars.txt";    //files where the stars originate
    String noDupsStarsFile = "testStarsNoDup.txt";
+   String theaterFile = "theaters.txt";
    int numStars = 3;
    BufferedReader br;
-   int numActors = 5;
-   int actorsInUse = 5;
+   int numActors = 10;
+   int actorsInUse = 10;
+
+   boolean distributed = false;
 
 
    double minDist = Double.MAX_VALUE;
@@ -36,7 +39,7 @@ behavior Main {
    {
 	  //remove the duplicates immediately, this func returns how many non-dup stars there are
 	  numStars = (int)removeDuplicates();
-	  standardOutput<-println("num of stars with no Dups: "+ numStars);
+
       try 
       {
          br = new BufferedReader(new FileReader(noDupsStarsFile));
@@ -55,23 +58,62 @@ behavior Main {
          standardOutput<-println("[error] Number of stars must be an int");
       }
       */
+
+      //checks for the -d flag indicating to run in distributed mode
+      for(int i = 0; i < argv.length; i++)
+      {
+         if(argv[i].equals("-d"))
+         {
+            distributed = true;
+         }
+      }
+
       makeStars();
    }
 
+   //creates the initial group of actors and starts them running
+   //if you're in distributed mode, they get evenly sent between all of the available theaters
    void makeStars()
    {
-      if(numStars < numActors)
+      if(numStars < numActors) //if there are fewer stars than actors, reduce the number of actors created
       {
          numActors = numStars;
          actorsInUse = numStars;
       }
       stars = new Star[numActors];
-      for(int i = 0; i < numActors; i++)
+      
+
+      if(distributed)
       {
-         stars[i] = new Star();
+         Vector theaters = new Vector();
+         String theater;
+         try{
+            BufferedReader theaterIn = new BufferedReader(new FileReader(theaterFile));
+            while((theater = theaterIn.readLine()) != null)
+            {
+               theaters.add(theater);
+            }
+            theaterIn.close();
+         }
+         catch(IOException ioe) {
+            standardOutput<-println("Error, can't open theater file");
+         }
+
+         for(int i = 0; i < numActors; i++)
+         {
+            stars[i] = new Star() at (new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i));
+         }
+      }
+      else
+      {
+         for(int i = 0; i < numActors; i++)
+         {
+            stars[i] = new Star();
+         }
       }
 
-      for(int i = 0; i < numActors; i++)
+
+      for(int i = 0; i < numActors; i++) //start the initial group of stars calculating
       {
 
          stars[i]<-init(i, noDupsStarsFile, numStars, self, i);
@@ -79,9 +121,10 @@ behavior Main {
       }
    }
 
+   //take the data given back from a finished star, and analyze it
    void processStar(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum)
    {
-      if(_min < minDist)
+      if(_min < minDist) //checks if the star's minimum is smaller than our current minimum, if so, update our current results
          {
             minDist = _min;
             minStar = new double[10][3];
@@ -89,13 +132,14 @@ behavior Main {
             minStar[1] = _minStar;
             minStarsFound = 2;
          }
-         else if(_min == minDist)
+         else if(_min == minDist) //if there's a tie, add the new one to the array of best results
          {
             boolean repeat = false;
             for(int i = 0; i < minStarsFound; i+=2)
             {
                //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
                
+               //checks if the pair of stars matches the already found pair, only append it if it's unique
                if(minStar[i][0] == _minStar[0] && minStar[i][1] == _minStar[1] && minStar[i][2] == _minStar[2] && minStar[i+1][0] == _myPos[0] && minStar[i+1][1] == _myPos[1] && minStar[i+1][2] == _myPos[2])
                {
                   repeat = true;
@@ -111,7 +155,8 @@ behavior Main {
             }
          }
 
-         if(_max > maxDist)
+         //repeats the same as the last block for max, maxMin, and so on, with the same logic
+         if(_max > maxDist) 
          {
             maxDist = _max;
             maxStar = new double[10][3];
@@ -211,7 +256,7 @@ behavior Main {
          }
    }
 
-   void startNextStar(int actorNum)
+   void startNextStar(int actorNum) //checks to see if there are remaining stars, if so, starts them, otherwise, outputs results
    {
       if(currentStar < numStars)
          {
@@ -237,10 +282,9 @@ behavior Main {
    {
          
          processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)@startNextStar(actorNum);
-         
-
    }
 
+   //once all stars are done their calculations, outputs the results 
    void outputResults()
    {
       standardOutput<-println(minDist + "  // minimal pairwise distance")@
