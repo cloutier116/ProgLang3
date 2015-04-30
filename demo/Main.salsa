@@ -10,8 +10,8 @@ behavior Main {
    String theaterFile = "theaters.txt";
    int numStars = 3;
    BufferedReader br;
-   int numActors = 10;
-   int actorsInUse = 10;
+   int numActors = 9;
+   int actorsInUse = 9;
 
    boolean distributed = false;
    
@@ -106,7 +106,7 @@ behavior Main {
          {
             stars[i] = new Star() at (new UAN("uan://localhost:3030/a"+i), new UAL("rmsp://"+theaters.get(i%theaters.size())+"/a"+i));
 			//updates how many actors this theater has
-			theaterNumActors[i%numActors]+= 1;
+			theaterNumActors[i%theaters.size()]+= 1;
 		 }
       }
       else
@@ -307,7 +307,9 @@ behavior Main {
 		{
 			//migrate this actor if the actors aren't evenly distributed amongst the theaters
 			//also don't migrate if there is only one theater
-			if(smallestTheater() != -1 && theaters.size() != 1)
+			int st = smallestTheater();
+			//standardOutput<- println("" + st + "  " + theaterNumActors[0] + "  " + theaterNumActors[1]);
+			if(st != -1 && st != theaterNum)
 			{
 				stars[actorNum] <-migrate(theaters.get(smallestTheater()));
 			}
