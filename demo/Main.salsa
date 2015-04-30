@@ -6,10 +6,12 @@ import java.util.*;
 
 behavior Main {
    String starsFile = "testStars.txt";
-   int numStars;
+   String noDupsStarsFile = "testStarsNoDup.txt";
+   int numStars = 3;
    BufferedReader br;
    int numActors = 5;
    int actorsInUse = 5;
+
 
    double minDist = Double.MAX_VALUE;
    double[][] minStar = new double[10][3];
@@ -30,26 +32,29 @@ behavior Main {
    int currentStar = 0;
    Star[] stars;
 
-   void act( String[] argv ) {
-
+   void act( String[] argv ) 
+   {
+	  //remove the duplicates immediately, this func returns how many non-dup stars there are
+	  numStars = (int)removeDuplicates();
+	  standardOutput<-println("num of stars with no Dups: "+ numStars);
       try 
       {
-         br = new BufferedReader(new FileReader(starsFile));
+         br = new BufferedReader(new FileReader(noDupsStarsFile));
       }
-      catch (IOException ioe) 
+      catch (IOException ioError) 
       {
-         standardOutput<-println("[error] Can't open the file " + starsFile + " for reading.");
+         standardOutput<-println("Error! couldn't open" + noDupsStarsFile);
       }
-
+		/*
       try
       {
-      numStars = Integer.parseInt(br.readLine());
+		//numStars = Integer.parseInt(br.readLine());
       }
       catch (IOException e)
       {
          standardOutput<-println("[error] Number of stars must be an int");
       }
-      
+      */
       makeStars();
    }
 
@@ -68,157 +73,171 @@ behavior Main {
 
       for(int i = 0; i < numActors; i++)
       {
-         stars[i]<-init(i, starsFile, numStars, self, i);
+
+         stars[i]<-init(i, noDupsStarsFile, numStars, self, i);
          currentStar++;
       }
    }
 
-   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum)
+   void processStar(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum)
    {
-
       if(_min < minDist)
-      {
-         minDist = _min;
-         minStar = new double[10][3];
-         minStar[0] = _myPos;
-         minStar[1] = _minStar;
-         minStarsFound = 2;
-      }
-      else if(_min == minDist)
-      {
-         boolean repeat = false;
-         for(int i = 0; i < minStarsFound; i+=2)
          {
-            //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
-            
-            if(minStar[i][0] == _minStar[0] && minStar[i][1] == _minStar[1] && minStar[i][2] == _minStar[2] && minStar[i+1][0] == _myPos[0] && minStar[i+1][1] == _myPos[1] && minStar[i+1][2] == _myPos[2])
+            minDist = _min;
+            minStar = new double[10][3];
+            minStar[0] = _myPos;
+            minStar[1] = _minStar;
+            minStarsFound = 2;
+         }
+         else if(_min == minDist)
+         {
+            boolean repeat = false;
+            for(int i = 0; i < minStarsFound; i+=2)
             {
-               repeat = true;
-               break;
+               //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
+               
+               if(minStar[i][0] == _minStar[0] && minStar[i][1] == _minStar[1] && minStar[i][2] == _minStar[2] && minStar[i+1][0] == _myPos[0] && minStar[i+1][1] == _myPos[1] && minStar[i+1][2] == _myPos[2])
+               {
+                  repeat = true;
+                  break;
+               }
+            }
+
+            if(!repeat)
+            {
+               minStar[minStarsFound] = _myPos;
+               minStar[minStarsFound+1] = _minStar;
+               minStarsFound+=2;
             }
          }
 
-         if(!repeat)
+         if(_max > maxDist)
          {
-            minStar[minStarsFound] = _myPos;
-            minStar[minStarsFound+1] = _minStar;
-            minStarsFound+=2;
+            maxDist = _max;
+            maxStar = new double[10][3];
+            maxStar[0] = _myPos;
+            maxStar[1] = _maxStar;
+            maxStarsFound = 2;
          }
-      }
-
-
-      if(_max > maxDist)
-      {
-         maxDist = _max;
-         maxStar = new double[10][3];
-         maxStar[0] = _myPos;
-         maxStar[1] = _maxStar;
-         maxStarsFound = 2;
-      }
-      else if(_max == maxDist)
-      {
-         boolean repeat = false;
-         for(int i = 0; i < maxStarsFound; i+=2)
+         else if(_max == maxDist)
          {
-            //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
-            
-            if(maxStar[i][0] == _maxStar[0] && maxStar[i][1] == _maxStar[1] && maxStar[i][2] == _maxStar[2] && maxStar[i+1][0] == _myPos[0] && maxStar[i+1][1] == _myPos[1] && maxStar[i+1][2] == _myPos[2])
+            boolean repeat = false;
+            for(int i = 0; i < maxStarsFound; i+=2)
             {
-               repeat = true;
-               break;
+               //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
+               
+               if(maxStar[i][0] == _maxStar[0] && maxStar[i][1] == _maxStar[1] && maxStar[i][2] == _maxStar[2] && maxStar[i+1][0] == _myPos[0] && maxStar[i+1][1] == _myPos[1] && maxStar[i+1][2] == _myPos[2])
+               {
+                  repeat = true;
+                  break;
+               }
+            }
+
+            if(!repeat)
+            {
+               maxStar[maxStarsFound] = _myPos;
+               maxStar[maxStarsFound+1] = _maxStar;
+               maxStarsFound+=2;
             }
          }
-
-         if(!repeat)
+       
+         if(_min > maxMin)
          {
-            maxStar[maxStarsFound] = _myPos;
-            maxStar[maxStarsFound+1] = _maxStar;
-            maxStarsFound+=2;
+            maxMin = _min;
+            maxMinStar = new double[5][3];
+            maxMinStar[0] = _myPos;
+            maxMinFound = 1;
          }
-      }
-
-      if(_min > maxMin)
-      {
-         maxMin = _min;
-         maxMinStar = new double[5][3];
-         maxMinStar[0] = _myPos;
-         maxMinFound = 1;
-      }
-      else if(_min == maxMin)
-      {
-         boolean repeat = false;
-         for(int i = 0; i < maxMinFound; i++)
+         else if(_min == maxMin)
          {
-            //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
-            
-            if(maxMinStar[i][0] == _minStar[0] && maxMinStar[i][1] == _minStar[1] && maxMinStar[i][2] == _minStar[2] && maxMinStar[i+1][0] == _myPos[0] && maxMinStar[i+1][1] == _myPos[1] && maxMinStar[i+1][2] == _myPos[2])
+            boolean repeat = false;
+            for(int i = 0; i < maxMinFound; i++)
             {
-               repeat = true;
-               break;
+               //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
+               
+               if(maxMinStar[i][0] == _minStar[0] && maxMinStar[i][1] == _minStar[1] && maxMinStar[i][2] == _minStar[2] && maxMinStar[i+1][0] == _myPos[0] && maxMinStar[i+1][1] == _myPos[1] && maxMinStar[i+1][2] == _myPos[2])
+               {
+                  repeat = true;
+                  break;
+               }
+            }
+
+            if(!repeat)
+            {
+               maxMinStar[maxStarsFound] = _myPos;
+               maxMinFound+=1;
             }
          }
-
-         if(!repeat)
+      
+         if(_max < minMax)
          {
-            maxMinStar[maxStarsFound] = _myPos;
-            maxMinFound+=1;
+            minMax = _max;
+            minMaxStar = new double[5][3];
+            minMaxStar[0] = _myPos;
+            minMaxFound = 1;
          }
-      }
-
-      if(_max < minMax)
-      {
-         minMax = _max;
-         maxMinStar = new double[5][3];
-         minMaxStar[0] = _myPos;
-         minMaxFound = 1;
-      }
-      else if(_max == minMax)
-      {
-         boolean repeat = false;
-         for(int i = 0; i < minMaxFound; i++)
+         else if(_max == minMax)
          {
-            //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
-            
-            if(minMaxStar[i][0] == _maxStar[0] && minMaxStar[i][1] == _maxStar[1] && minMaxStar[i][2] == _maxStar[2] && minMaxStar[i+1][0] == _myPos[0] && minMaxStar[i+1][1] == _myPos[1] && minMaxStar[i+1][2] == _myPos[2])
+            boolean repeat = false;
+            for(int i = 0; i < minMaxFound; i++)
             {
-               repeat = true;
-               break;
+               //standardOutput<-print("\n(" + minStar[i][0] +","  + minStar[i][1] +"," + minStar[i][2] + ")   (" + _minStar[0] +","  + _minStar[1] +"," + _minStar[2] + ")\n(" + minStar[i+1][0] +","  + minStar[i+1][1] +"," + minStar[i+1][2] + ")  (" + _myPos[0] +","  + _myPos[1] +"," + _myPos[2] + ")\n"); 
+               
+               if(minMaxStar[i][0] == _maxStar[0] && minMaxStar[i][1] == _maxStar[1] && minMaxStar[i][2] == _maxStar[2] && minMaxStar[i+1][0] == _myPos[0] && minMaxStar[i+1][1] == _myPos[1] && minMaxStar[i+1][2] == _myPos[2])
+               {
+                  repeat = true;
+                  break;
+               }
+            }
+
+            if(!repeat)
+            {
+               minMaxStar[maxStarsFound] = _myPos;
+               minMaxFound+=1;
             }
          }
-
-         if(!repeat)
+      
+         if(_avg < avg)
          {
-            minMaxStar[maxStarsFound] = _myPos;
-            minMaxFound+=1;
+            avg = _avg;
+            avgStar = new double[5][3];
+            avgStar[0] = _myPos;
+            avgFound = 1;
          }
-      }
-      if(_avg < avg)
-      {
-         avg = _avg;
-         avgStar = new double[5][3];
-         avgStar[0] = _myPos;
-         avgFound = 1;
-      }
-      else if(_avg == avg)
-      {
-         avgStar[avgFound] = _myPos;
-         avgFound+=1;
-      }
+         else if(_avg == avg)
+         {
+            avgStar[avgFound] = _myPos;
+            avgFound+=1;
+         }
+   }
 
+   void startNextStar(int actorNum)
+   {
       if(currentStar < numStars)
-      {
-         stars[actorNum]<-init(currentStar, starsFile, numStars, self, actorNum);
-         currentStar++;
-      }
-      else
-      {
-         if(actorsInUse > 1)
          {
-            actorsInUse--;
+            stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, self, actorNum);
+            currentStar++;
          }
          else
-            outputResults();
-      }
+         {
+            if(actorsInUse > 1)
+            {
+               actorsInUse--;
+            }
+            else
+            {
+               //standardOutput<-print("(" + maxMinStar[0][0] +","  + maxMinStar[0][1] +"," + maxMinStar[0][2] +")  \n");
+               outputResults();
+            }
+         }
+   }
+
+
+   void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum)
+   {
+         
+         processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)@startNextStar(actorNum);
+         
 
    }
 
@@ -253,11 +272,12 @@ behavior Main {
       }@standardOutput<-println("")@
 
       standardOutput<-println(maxMin + "  // maximum minimal distance")@
+
       join
       {
          for(int i = 0; i < maxMinFound; i++)
          {
-            standardOutput<-println("(" + maxMinStar[i][0] +","  + maxMinStar[i][1] +"," + maxMinStar[i][2] +")  \n");
+            standardOutput<-print("(" + maxMinStar[i][0] +","  + maxMinStar[i][1] +"," + maxMinStar[i][2] +")  \n");
          }
       }@standardOutput<-println("")@
 
@@ -266,10 +286,56 @@ behavior Main {
       {
          for(int i = 0; i < avgFound; i++)
          {
-            standardOutput<-println("(" + avgStar[i][0] +","  + avgStar[i][1] +"," + avgStar[i][2] +")  \n");
+            standardOutput<-print("(" + avgStar[i][0] +","  + avgStar[i][1] +"," + avgStar[i][2] +")  \n");
          }
       }@standardOutput<-println("");
 
+   }
+   
+   //this function reads over the input file,stores every line in a set to avoid duplicates,
+   //then saves that set to a new file and returns the number of stars in the new file
+   int removeDuplicates()
+   {
+		HashSet starsSet = new HashSet();
+		try
+		{
+			BufferedReader reader = new BufferedReader(new FileReader(starsFile));
+			String line = reader.readLine();	//first readline gets rid of # of stars
+			line = reader.readLine();
+			
+			//loop over every line and add it to the set
+			while(line != null)
+			{
+				if(!line.equalsIgnoreCase(""))
+				{
+					starsSet.add(line);
+				}
+				line = reader.readLine();
+			}
+			reader.close();
+		}
+		catch(IOException ioError)
+		{
+			standardOutput<-println("Error! couldn't write a new file for the no duplicate star file!");
+		}
+		//now write to a file the set we just made
+		try
+		{
+			PrintWriter newFile = new PrintWriter(new BufferedWriter(new FileWriter(noDupsStarsFile)));
+			//gotta put that number of stars at the top of the file
+			newFile.println(starsSet.size());
+			
+			for(Iterator i = starsSet.iterator(); i.hasNext(); )
+			{
+				newFile.println((String)i.next());
+			}
+			newFile.close();
+		}
+		catch(IOException ioError)
+		{
+			standardOutput<- println("Error! couldn't write to the new stars file with now duplicates!");
+		}
+		return starsSet.size();
    }
 
 }

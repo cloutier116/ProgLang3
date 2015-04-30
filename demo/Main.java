@@ -267,7 +267,8 @@ public class Main extends UniversalActor  {
 		}
 
 		String starsFile = "testStars.txt";
-		int numStars;
+		String noDupsStarsFile = "testStarsNoDup.txt";
+		int numStars = 3;
 		BufferedReader br;
 		int numActors = 5;
 		int actorsInUse = 5;
@@ -289,28 +290,23 @@ public class Main extends UniversalActor  {
 		int currentStar = 0;
 		Star[] stars;
 		public void act(String[] argv) {
-			try {
-				br = new BufferedReader(new FileReader(starsFile));
-			}
-			catch (IOException ioe) {
+			numStars = (int)removeDuplicates();
+			{
+				// standardOutput<-println("num of stars with no Dups: "+numStars)
 				{
-					// standardOutput<-println("[error] Can't open the file "+starsFile+" for reading.")
-					{
-						Object _arguments[] = { "[error] Can't open the file "+starsFile+" for reading." };
-						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
-						__messages.add( message );
-					}
+					Object _arguments[] = { "num of stars with no Dups: "+numStars };
+					Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+					__messages.add( message );
 				}
 			}
-
 			try {
-				numStars = Integer.parseInt(br.readLine());
+				br = new BufferedReader(new FileReader(noDupsStarsFile));
 			}
-			catch (IOException e) {
+			catch (IOException ioError) {
 				{
-					// standardOutput<-println("[error] Number of stars must be an int")
+					// standardOutput<-println("Error! couldn't open"+noDupsStarsFile)
 					{
-						Object _arguments[] = { "[error] Number of stars must be an int" };
+						Object _arguments[] = { "Error! couldn't open"+noDupsStarsFile };
 						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -337,9 +333,9 @@ public class Main extends UniversalActor  {
 			}
 			for (int i = 0; i<numActors; i++){
 				{
-					// stars[i]<-init(i, starsFile, numStars, ((Main)self), i)
+					// stars[i]<-init(i, noDupsStarsFile, numStars, ((Main)self), i)
 					{
-						Object _arguments[] = { i, starsFile, numStars, ((Main)self), i };
+						Object _arguments[] = { i, noDupsStarsFile, numStars, ((Main)self), i };
 						Message message = new Message( self, stars[i], "init", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -347,7 +343,7 @@ public class Main extends UniversalActor  {
 				currentStar++;
 			}
 		}
-		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
+		public void processStar(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
 			if (_min<minDist) {{
 				minDist = _min;
 				minStar = new double[10][3];
@@ -408,7 +404,7 @@ break;					}
 }			}
 }}			if (_max<minMax) {{
 				minMax = _max;
-				maxMinStar = new double[5][3];
+				minMaxStar = new double[5][3];
 				minMaxStar[0] = _myPos;
 				minMaxFound = 1;
 			}
@@ -434,11 +430,13 @@ break;					}
 				avgStar[avgFound] = _myPos;
 				avgFound += 1;
 			}
-}}			if (currentStar<numStars) {{
+}}		}
+		public void startNextStar(int actorNum) {
+			if (currentStar<numStars) {{
 				{
-					// stars[actorNum]<-init(currentStar, starsFile, numStars, ((Main)self), actorNum)
+					// stars[actorNum]<-init(currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum)
 					{
-						Object _arguments[] = { currentStar, starsFile, numStars, ((Main)self), actorNum };
+						Object _arguments[] = { currentStar, noDupsStarsFile, numStars, ((Main)self), actorNum };
 						Message message = new Message( self, stars[actorNum], "init", _arguments, null, null );
 						__messages.add( message );
 					}
@@ -449,16 +447,35 @@ break;					}
 				if (actorsInUse>1) {{
 					actorsInUse--;
 				}
-}				else {				{
-					// outputResults()
+}				else {{
 					{
-						Object _arguments[] = {  };
-						Message message = new Message( self, self, "outputResults", _arguments, null, null );
-						__messages.add( message );
+						// outputResults()
+						{
+							Object _arguments[] = {  };
+							Message message = new Message( self, self, "outputResults", _arguments, null, null );
+							__messages.add( message );
+						}
 					}
 				}
 }			}
 }		}
+		public void starDone(double _min, double[] _minStar, double _max, double[] _maxStar, double _avg, double[] _myPos, int actorNum) {
+			{
+				Token token_2_0 = new Token();
+				// processStar(_min, _minStar, _max, _maxStar, _avg, _myPos, actorNum)
+				{
+					Object _arguments[] = { _min, _minStar, _max, _maxStar, _avg, _myPos, actorNum };
+					Message message = new Message( self, self, "processStar", _arguments, null, token_2_0 );
+					__messages.add( message );
+				}
+				// startNextStar(actorNum)
+				{
+					Object _arguments[] = { actorNum };
+					Message message = new Message( self, self, "startNextStar", _arguments, token_2_0, null );
+					__messages.add( message );
+				}
+			}
+		}
 		public void outputResults() {
 			{
 				Token token_2_0 = new Token();
@@ -560,10 +577,10 @@ break;					}
 				token_2_10.setJoinDirector();
 				for (int i = 0; i<maxMinFound; i++){
 					{
-						// standardOutput<-println("("+maxMinStar[i][0]+","+maxMinStar[i][1]+","+maxMinStar[i][2]+")  \n")
+						// standardOutput<-print("("+maxMinStar[i][0]+","+maxMinStar[i][1]+","+maxMinStar[i][2]+")  \n")
 						{
 							Object _arguments[] = { "("+maxMinStar[i][0]+","+maxMinStar[i][1]+","+maxMinStar[i][2]+")  \n" };
-							Message message = new Message( self, standardOutput, "println", _arguments, token_2_9, token_2_10 );
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_9, token_2_10 );
 							__messages.add( message );
 						}
 					}
@@ -585,10 +602,10 @@ break;					}
 				token_2_13.setJoinDirector();
 				for (int i = 0; i<avgFound; i++){
 					{
-						// standardOutput<-println("("+avgStar[i][0]+","+avgStar[i][1]+","+avgStar[i][2]+")  \n")
+						// standardOutput<-print("("+avgStar[i][0]+","+avgStar[i][1]+","+avgStar[i][2]+")  \n")
 						{
 							Object _arguments[] = { "("+avgStar[i][0]+","+avgStar[i][1]+","+avgStar[i][2]+")  \n" };
-							Message message = new Message( self, standardOutput, "println", _arguments, token_2_12, token_2_13 );
+							Message message = new Message( self, standardOutput, "print", _arguments, token_2_12, token_2_13 );
 							__messages.add( message );
 						}
 					}
@@ -601,6 +618,52 @@ break;					}
 					__messages.add( message );
 				}
 			}
+		}
+		public int removeDuplicates() {
+			HashSet starsSet = new HashSet();
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(starsFile));
+				String line = reader.readLine();
+				line = reader.readLine();
+				while (line!=null) {
+					if (!line.equalsIgnoreCase("")) {{
+						starsSet.add(line);
+					}
+}					line = reader.readLine();
+				}
+				reader.close();
+			}
+			catch (IOException ioError) {
+				{
+					// standardOutput<-println("Error! couldn't write a new file for the no duplicate star file!")
+					{
+						Object _arguments[] = { "Error! couldn't write a new file for the no duplicate star file!" };
+						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						__messages.add( message );
+					}
+				}
+			}
+
+			try {
+				PrintWriter newFile = new PrintWriter(new BufferedWriter(new FileWriter(noDupsStarsFile)));
+				newFile.println(starsSet.size());
+				for (Iterator i = starsSet.iterator(); i.hasNext(); ){
+					newFile.println((String)i.next());
+				}
+				newFile.close();
+			}
+			catch (IOException ioError) {
+				{
+					// standardOutput<-println("Error! couldn't write to the new stars file with now duplicates!")
+					{
+						Object _arguments[] = { "Error! couldn't write to the new stars file with now duplicates!" };
+						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						__messages.add( message );
+					}
+				}
+			}
+
+			return starsSet.size();
 		}
 	}
 }
